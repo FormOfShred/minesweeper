@@ -1,0 +1,154 @@
+﻿<UserControl x:Class="View.Screens.PlayScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:View.Screens"
+             xmlns:converters="clr-namespace:View.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <converters:SquareStatusConverter x:Key="squareStatusToText" Uncovered="Visible" Covered="Hidden" Flagged="Hidden" Mine="Hidden"/>
+        <converters:SquareStatusConverter x:Key="squareStatusToClick" Uncovered="False" Covered="True" Flagged="False" Mine="False"/>
+        <converters:SquareStatusConverter x:Key="squareStatusToImg" Flagged="/Img/flag.png" Mine="/Img/mine.png"/>
+        <converters:SquareStatusConverter x:Key="squareStatusToColor" Uncovered="LightGray" Covered="LightSteelBlue" Flagged="LightSteelBlue" Mine="LightGray"/>
+        
+        <converters:GameStatusConverter x:Key="gameStatusToString" Lost="Game lost" Won="Game won"/>
+        <converters:GameStatusConverter x:Key="gameStatusToClick" InProgress="Hidden" Lost="Visible" Won="Visible"/>
+        <converters:GameStatusConverter x:Key="gameStatusToAnimation" InProgress="0" Lost="360" Won="360"/>
+
+        <converters:MineCountConverter x:Key="mineCountToColor" Zero="Green" One="Blue" Two="Orange" Three="Red" Four="Purple" Five="Maroon" Six="Cyan" Seven="Yellow" Eight="Magneta"/>
+
+        <Style x:Key="styleButton" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+        </Style>
+
+        <Style x:Key="styleImage" TargetType="{x:Type Image}">
+            <Setter Property="Source" Value="{Binding Path=Square.Value.Status, Converter={StaticResource squareStatusToImg}}"/>
+
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Game.Value.Status}" Value="Lost"/>
+                        <Condition Binding="{Binding ContainsMine}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.0" To="1.0" Duration="0:0:2" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Source" Value="/Img/mine.png"/>
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <Button DockPanel.Dock="Bottom" Content="Go to settings" Command="{Binding SwitchToSettings}" Height="30" Margin="5"/>
+
+        <Viewbox Stretch="Uniform">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="32"/>
+                </Grid.RowDefinitions>
+                
+                <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Game.Value.Board.Value.GetRows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+
+                            <ItemsControl x:Name="rowView" ItemsSource="{Binding Path=Squares}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource styleButton}" Command="{Binding Path=Uncover}" x:Name="button">
+                                            <Button.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="{Binding Path=Uncover}"/>
+                                                <MouseBinding MouseAction="RightClick" Command="{Binding Path=Flag}"/>
+                                            </Button.InputBindings>
+
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="{x:Type Button}">
+                                                    <Border Name="border" Background="{Binding Path=Square.Value.Status, Converter={StaticResource squareStatusToColor}}" 
+                                                            BorderThickness="1" BorderBrush="Black">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="Blue"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+
+                                            <Grid>
+                                                <Image Style="{StaticResource styleImage}"/>
+                                                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                           Text="{Binding Path=Square.Value.NeighboringMineCount}" 
+                                                           Visibility="{Binding Path=Square.Value.Status, Converter={StaticResource squareStatusToText}}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="{x:Type TextBlock}">
+                                                            <Setter Property="Foreground" Value="{Binding Path=Square.Value.NeighboringMineCount, Converter={StaticResource mineCountToColor}}" />
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border BorderBrush="Black" BorderThickness="1" Grid.Row="1">
+                    <Grid Background="LightGray">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="31" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontSize="15" x:Name="gameStatus" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Text="{Binding Path=Game.Value.GameProgressCell.Value, Converter={StaticResource gameStatusToString}}">
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="gameStatus" Storyboard.TargetProperty="Opacity"
+                                                         From="1.0" To="0.0" Duration="0:0:1" AutoReverse="True" RepeatBehavior="Forever"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+
+                        <Button Grid.Column="1" Content="💣" Command="{Binding NewGame}"
+                            Visibility="{Binding Path=Game.Value.GameProgressCell.Value, Converter={StaticResource gameStatusToClick}}"/>
+
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Path=Counter.Value, StringFormat={}{0}}" 
+                           FontSize="15"/>
+                    </Grid>
+                </Border>
+
+            </Grid>
+            
+
+        </Viewbox>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,14 @@
+{
+    "first-name": "Robyn",
+    "last-name": "Hamelryck",
+    "github-url": "https://github.com/ucll-vgo2122/minesweeper-r0797966",
+    "framework": "WPF",
+    "extensions": [
+        "Background color changes on hover",
+        "Custom mine probability",
+        "Quickstart",
+        "Different font color depending on amount of neighboring mines",
+        "Animation (text fade-in, fade-out, mines on game over)",
+        "Timer"
+    ]
+}
