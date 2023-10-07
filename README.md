@@ -1,6 +1,7 @@
 # MineSweeper Project
 
-Toledo contains a link to the compiled version of the guide.
+A project for programmeren van visuele gebruiksomgeving. Uses C#. 
+Started with startercode and had to expand following a guide. 
 
 ## Extensions 
 
